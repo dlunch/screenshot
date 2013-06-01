@@ -132,6 +132,8 @@ void ProcessHotKey()
 	SendString(s, "Content-Length: " + ToString(body.size()) + "\r\n\r\n");
 	send(s, (const char *)&*body.begin(), body.size(), 0);
 
+	bool flag = false;
+	int begin, end = 0;
 	std::string data;
 	while(true)
 	{
@@ -141,29 +143,32 @@ void ProcessHotKey()
 			break;
 		buf[n] = 0;
 		data.append(buf);
-	}
 
-	int begin, end = 0;
-	while(true)
-	{
-		begin = data.find("\r\n", end + 1) + 2;
-		end = data.find("\r\n", begin);
-		if(begin == std::string::npos || end == std::string::npos)
-			break;
-		std::string line = data.substr(begin, end - begin + 1);
-		if(line.substr(0, 7) == "http://")
+		while(true)
 		{
-			HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, line.size());
-			memcpy(GlobalLock(hMem), line.c_str(), line.size());
-			GlobalUnlock(hMem);
-			OpenClipboard(0);
-			EmptyClipboard();
-			SetClipboardData(CF_TEXT, hMem);
-			CloseClipboard();
+			begin = data.find("\r\n", end + 1) + 2;
+			end = data.find("\r\n", begin);
+			if(begin == std::string::npos || end == std::string::npos)
+				break;
+			std::string line = data.substr(begin, end - begin + 1);
+			if(line.substr(0, 7) == "http://")
+			{
+				HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, line.size());
+				memcpy(GlobalLock(hMem), line.c_str(), line.size());
+				GlobalUnlock(hMem);
+				OpenClipboard(0);
+				EmptyClipboard();
+				SetClipboardData(CF_TEXT, hMem);
+				CloseClipboard();
+
+				flag = true;
+				break;
+			}
 		}
+		if(flag)
+			break;
 	}
 
-	MessageBox(NULL, TEXT("Done"), TEXT("Done"), MB_OK);
 	closesocket(s);
 }
 
