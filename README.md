@@ -4,6 +4,8 @@ Simple Screenshot Uploader
 This program captures a screenshot, upload, and copy uri to your clipboard.
 
 scrshot.php example:
+    
+    
     <?php
     ini_set('display_errors', '1');
     
